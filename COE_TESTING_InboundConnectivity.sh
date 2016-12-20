@@ -14,6 +14,7 @@
 #    PROPERTYFILE             Overwrite the default configuration file.
 #    VERBOSE                  Increases logging output.
 #    SILENT                   Decreases logging output.
+#    LOOP                     Number of times to repeat the process.
 #    PS_SERVERS               Specified in Properties File
 #    FTP_PORTS                Specified in Properties File
 #    FTPS_PORTS               Specified in Properties File
@@ -30,7 +31,10 @@
 #    -V, --version            Prints out Version Number.
 #    -v, --verbose            Prints Verbose messages from Curl Command.
 #    -s, --silent             Prints only pass fail logging lines.
-#    -p=*, --propertyFile=*   Pass in optional
+#    -p=*, --propertyFile=*   Optional, overwrite default properties file 
+#                                       (COE_TESTING_InboundConnectivity.properties).
+#    -l=*, --loop=*           Optional, overwrite default loop count (1).
+#                             Set loop to 0 to have it run endlessly.
 #  Returns:
 #    None
 #######################################
@@ -43,7 +47,10 @@ Options:
     -V, --version              Prints out Version Number.
     -v, --verbose              Prints Verbose messages from Curl Command.
     -s, --silent               Prints only pass fail logging lines.
-    -p=*, --propertyFile=*     Pass in optional
+    -p=*, --propertyFile=*     Optional, overwrite default properties file 
+                               (COE_TESTING_InboundConnectivity.properties).
+    -l=*, --loop=*             Optional, overwrite default loop count (1).
+                               Set loop to 0 to have it run endlessly.
 
 Argument:
     protocol (optional):       Required argument, pass in each protocol that needs to be
@@ -72,16 +79,20 @@ for arg in $@; do
       echo "${USAGE}"
       exit 0
     ;;
-      -V|--verbose)
+    -V|--verbose)
       VERBOSE=true
       shift
     ;;
-      -s|--silent)
+    -s|--silent)
       SILENT=true
       shift
     ;;
       -p=*|--propertyFile=*)
       PROPERTYFILE="${arg#*=}"
+      shift
+    ;;
+      -l=*|--loop=*)
+      LOOP="${arg#*=}"
       shift
     ;;
   esac
@@ -91,13 +102,27 @@ PROTOCOLS=$@
 # --- Load Variables -----------------------------------------------
 
 if [ -z "${PROPERTYFILE}" ] ; then
-    PROPERTYFILE=COE_TESTING_InboundConnectivity.properties
+  PROPERTYFILE=COE_TESTING_InboundConnectivity.properties
 fi
 
 . $PROPERTYFILE
 
 if [ -z "${PROTOCOLS}" ] ; then
-    PROTOCOLS="ALL"
+  PROTOCOLS="ALL"
+fi
+
+if [ -z "${LOOP}" ] ; then
+  LIMIT=1
+  COUNT=0
+  INCREMENTOR=1
+elif [ "${LOOP}" == "0" ]; then
+  LIMIT=1
+  COUNT=0
+  INCREMENTOR=0
+else
+  LIMIT=${LOOP}
+  COUNT=0
+  INCREMENTOR=1
 fi
 
 if [ "${SILENT}" ] ; then
@@ -205,10 +230,10 @@ for it_ps in $(seq 0 $(expr ${#PS_SERVERS[@]} - 1 ) ); do
       ${curl} -k \
         https://${PS_SERVERS[${it_ps}]}:${HTTPS_PORTS[${it_port}]}/mailbox >> /dev/null
       if [ $? != 0 ]; then
-        echo "${datetime}:FAILURE:HTTP:${PS_SERVERS[${it_ps}]}:${HTTPS_PORTS[${it_port}]}:"\
+        echo "${datetime}:FAILURE:HTTPS:${PS_SERVERS[${it_ps}]}:${HTTPS_PORTS[${it_port}]}:"\
              "Server is not responding."
       else
-        echo "${datetime}:SUCCESS:HTTP:${PS_SERVERS[${it_ps}]}:${HTTPS_PORTS[${it_port}]}:"\
+        echo "${datetime}:SUCCESS:HTTPS:${PS_SERVERS[${it_ps}]}:${HTTPS_PORTS[${it_port}]}:"\
              "Server is responding."
       fi
   done
@@ -245,4 +270,9 @@ for i in $PROTOCOLS; do
 done
 }
 
-main
+while [[  ${COUNT} -lt ${LIMIT} ]]; do
+  main
+  COUNT=$((${COUNT}+${INCREMENTOR}))
+done
+
+
