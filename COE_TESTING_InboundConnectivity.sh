@@ -6,13 +6,14 @@
 #    COE_TESTING_InboundConnectivity.sh
 #  Description:
 #    Process designed to initiate connections to B2Bi communication
-#    adapters. Communication
+#    adapters. Initiate curl commands to each protocol adapter;
+#    (FTP,FTPS,SFTP,HTTP,HTTPS)
 #  Globals:
-#    VERSION
-#    USAGE
-#    PROPERTYFILE
-#    VERBOSE
-#    SILENT
+#    VERSION                  Prints Version number.
+#    USAGE                    Prints Usage message.
+#    PROPERTYFILE             Overwrite the default configuration file.
+#    VERBOSE                  Increases logging output.
+#    SILENT                   Decreases logging output.
 #    PS_SERVERS               Specified in Properties File
 #    FTP_PORTS                Specified in Properties File
 #    FTPS_PORTS               Specified in Properties File
