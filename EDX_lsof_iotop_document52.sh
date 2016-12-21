@@ -1,9 +1,12 @@
-#!/usr/bin/ksh
+#!/bin/ksh
+# #!/usr/bin/ksh
 
 #--- Assigning Global Variables ----------------------------------------
-date=`date +%Y%m%d`
-lsof_log_file="/home/gisadmin/extpsmon/lsof.log.$date"
-iotop_log_file="/edx_logs/extpsmon/node1_iotop.log.$date"
+date=$(date +%Y%m%d)
+script_path=$(dirname  "$0")
+logs_directory="${script_path}/Logs"
+lsof_log_file="${logs_directory}/lsof.log.$date"
+iotop_log_file="${logs_directory}/node1_iotop.log.$date"
 
 #--- LSOF Logging ------------------------------------------------------
 
