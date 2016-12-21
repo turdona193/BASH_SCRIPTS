@@ -244,7 +244,7 @@ function main()
 {
 for i in $PROTOCOLS; do
   case $i in
-    ALL)
+    ALL|all)
       ftp_test
       ftps_test
       sftp_test
